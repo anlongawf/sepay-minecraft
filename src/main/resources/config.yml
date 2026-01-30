@@ -1,0 +1,50 @@
+# Cấu hình Sepay Plugin
+# API Key lấy tại https://sepay.vn
+
+sepay:
+  # Số tài khoản ngân hàng nhận tiền
+  account_number: "0000000000"
+  
+  # Mã ngân hàng (VD: MB, VCB, ACB, TPB...)
+  bank_code: "MB"
+  
+  # Tên chủ tài khoản (Không dấu, in hoa) hiển thị trên QR
+  account_name: "NGUYEN VAN A"
+  
+  # API Token từ Sepay để bảo mật Webhook
+  api_key: "sepay_api_token_here"
+  
+  # Cổng Webhook Server chạy trên plugin này
+  # Bạn cần mở port này (Port Forwarding) để Sepay có thể gọi vào
+  webhook_port: 25580
+
+transaction:
+  # Tiền tố nội dung chuyển khoản. VD: NAP <TênPlayer>
+  # Khi tạo QR, nội dung sẽ là: prefix + user_name
+  # Lưu ý: Sepay cần cấu hình mapping để nhận diện được tiền tố này nếu cần, 
+  # hoặc Webhook sẽ nhận toàn bộ nội dung transaction.
+  # Ở plugin này, logic check sẽ là: description CÓ CHỨA mã giao dịch.
+  content_prefix: "NAP "
+  
+  # Tỉ lệ quy đổi (nếu dùng lệnh eco give)
+  # 1 VND = bao nhiêu tiền game?
+  # Nếu dùng command tùy chỉnh bên dưới để set cứng thì có thể bỏ qua.
+  exchange_rate: 1.0
+
+actions:
+  # Lệnh chạy khi nạp thành công
+  # %player%: Tên người chơi
+  # %amount%: Số tiền nạp
+  # %game_money%: Số tiền nạp * exchange_rate
+  on_success:
+    - "eco give %player% %game_money%"
+    - "broadcast &aNgười chơi %player% vừa nạp %amount% VNĐ!"
+
+messages:
+  prefix: "&8[&aSepay&8] &r"
+  only_player: "&cLệnh này chỉ dành cho người chơi!"
+  invalid_amount: "&cSố tiền không hợp lệ! Vui lòng nhập số > 1000."
+  generating_qr: "&eĐang tạo mã QR... Vui lòng giữ trống 1 ô trên tay."
+  map_given: "&aĐã cấp mã QR! Hãy cầm bản đồ để quét."
+  inventory_full: "&cTúi đồ đầy! Không thể nhận bản đồ QR."
+  success: "&aNạp thẻ thành công! Cảm ơn bạn."

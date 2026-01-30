@@ -1,0 +1,26 @@
+name: SepayPlugin
+version: '${project.version}'
+main: vn.sepay.plugin.SepayPlugin
+api-version: '1.21'
+prefix: Sepay
+authors: [Google Antigravity]
+description: Plugin tích hợp Sepay QR và Webhook.
+website: https://sepay.vn
+
+permissions:
+  sepay.use:
+    description: Cho phép sử dụng lệnh nạp tiền
+    default: true
+  sepay.admin:
+    description: Quản lý plugin sepay
+    default: op
+
+commands:
+  nap:
+    description: Nạp tiền qua QR Code
+    usage: /nap <số tiền>
+    permission: sepay.use
+  sepayreload:
+    description: Tải lại cấu hình
+    usage: /sepayreload
+    permission: sepay.admin

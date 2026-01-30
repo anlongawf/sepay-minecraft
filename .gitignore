@@ -1,0 +1,72 @@
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.properties
+
+# IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+out/
+
+# Eclipse
+.classpath
+.project
+.settings/
+.metadata/
+
+# VS Code
+.vscode/
+
+# Mac OS
+.DS_Store
+
+# Logs & Plugin Data
+*.log
+processed_transactions.txt
+user_data/
+crash-reports/
+
+# Minecraft Server (Test Env)
+run/
+server/
+test-server/
+world/
+world_nether/
+world_the_end/
+logs/
+cache/
+versions/
+libraries/
+config/
+plugins/
+!src/**/plugins/
+
+# Server Configs (Generated)
+banned-ips.json
+banned-players.json
+ops.json
+usercache.json
+whitelist.json
+server.properties
+eula.txt
+commands.yml
+spigot.yml
+bukkit.yml
+paper.yml
+permissions.yml
+help.yml
+
+# Compiled Files
+*.jar
+*.war
+*.ear
+!src/**/*.jar
