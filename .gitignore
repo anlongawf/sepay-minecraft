@@ -46,7 +46,7 @@ logs/
 cache/
 versions/
 libraries/
-config/
+/config/
 plugins/
 !src/**/plugins/
 
