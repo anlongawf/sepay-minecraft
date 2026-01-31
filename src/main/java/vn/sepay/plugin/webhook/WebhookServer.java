@@ -52,7 +52,10 @@ public class WebhookServer extends NanoHTTPD {
 
     @Override
     public Response serve(IHTTPSession session) {
+        plugin.getLogger().info("[Sepay] Received request: " + session.getMethod() + " " + session.getUri());
+        
         if (!session.getMethod().equals(Method.POST)) {
+            plugin.getLogger().info("[Sepay] Rejected: Method not POST");
             return newFixedLengthResponse(Response.Status.METHOD_NOT_ALLOWED, MIME_PLAINTEXT, "Only POST allowed.");
         }
 
@@ -60,11 +63,12 @@ public class WebhookServer extends NanoHTTPD {
         String authHeader = session.getHeaders().get("authorization");
         
         if (apiKey != null && !apiKey.isEmpty()) {
-            // Check if header contains key (lenient check)
             boolean authorized = false;
+            // Lenient check: header usually "Bearer <token>"
             if (authHeader != null && authHeader.contains(apiKey)) authorized = true;
             
             if (!authorized) {
+                 plugin.getLogger().warning("[Sepay] Authentication Failed. Header: " + authHeader);
                  return newFixedLengthResponse(Response.Status.UNAUTHORIZED, MIME_PLAINTEXT, "Invalid API Key");
             }
         }
@@ -73,6 +77,8 @@ public class WebhookServer extends NanoHTTPD {
             Map<String, String> files = new HashMap<>();
             session.parseBody(files);
             String jsonBody = files.get("postData");
+            
+            plugin.getLogger().info("[Sepay] Body: " + jsonBody);
 
             if (jsonBody == null) {
                 return newFixedLengthResponse(Response.Status.BAD_REQUEST, MIME_PLAINTEXT, "No Body");
@@ -87,17 +93,18 @@ public class WebhookServer extends NanoHTTPD {
             }
 
             if (processedTransactions.contains(transactionId)) {
+                 plugin.getLogger().info("[Sepay] Duplicate transaction ignored: " + transactionId);
                  return newFixedLengthResponse(Response.Status.OK, MIME_PLAINTEXT, "Already Processed");
             }
 
             String content = (String) json.get("content");
-            // Use BigDecimal or Double. logic:
             Object amtObj = json.get("transferAmount");
             double amount = 0;
             if (amtObj instanceof Double) amount = (Double) amtObj;
             else if (amtObj instanceof Long) amount = ((Long) amtObj).doubleValue();
             else if (amtObj != null) amount = Double.parseDouble(amtObj.toString());
             
+            plugin.getLogger().info("[Sepay] Processing: ID=" + transactionId + ", Amount=" + amount + ", Content=" + content);
             processPayment(transactionId, content, amount);
             
             return newFixedLengthResponse(Response.Status.OK, MIME_PLAINTEXT, "Success");
@@ -112,13 +119,14 @@ public class WebhookServer extends NanoHTTPD {
         if (content == null) return;
         
         String prefix = plugin.getConfigManager().getContentPrefix().trim();
-        // Regex: Prefix + Space + PlayerName
-        // Example: "NAP User123"
+        plugin.getLogger().info("[Sepay] Checking content: '" + content + "' against prefix '" + prefix + "'");
+        
         Pattern pattern = Pattern.compile(Pattern.quote(prefix) + "\\s*([A-Za-z0-9_]+)", Pattern.CASE_INSENSITIVE);
         Matcher matcher = pattern.matcher(content);
 
         if (matcher.find()) {
             String playerName = matcher.group(1);
+            plugin.getLogger().info("[Sepay] Match found: Player=" + playerName);
             
             Bukkit.getScheduler().runTask(plugin, () -> {
                 OfflinePlayer player = Bukkit.getOfflinePlayer(playerName);
@@ -132,7 +140,7 @@ public class WebhookServer extends NanoHTTPD {
                 for (String cmd : plugin.getConfigManager().getSuccessCommands()) {
                     String run = cmd.replace("%player%", playerName)
                                     .replace("%amount%", String.valueOf((long)amount))
-                                    .replace("%game_money%", String.valueOf(gameMoney));
+                                    .replace("%game_money%", String.valueOf((long)gameMoney)); // Cast to long to remove .0
                     Bukkit.dispatchCommand(Bukkit.getConsoleSender(), run);
                 }
                 

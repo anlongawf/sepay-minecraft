@@ -3,42 +3,43 @@
 
 sepay:
   # Số tài khoản ngân hàng nhận tiền
-  account_number: "0000000000"
+  account_number: "0903982264"
   
   # Mã ngân hàng (VD: MB, VCB, ACB, TPB...)
   bank_code: "MB"
   
   # Tên chủ tài khoản (Không dấu, in hoa) hiển thị trên QR
-  account_name: "NGUYEN VAN A"
+  account_name: "PHAN QUOC AN"
   
-  # API Token từ Sepay để bảo mật Webhook
-  api_key: "sepay_api_token_here"
+  # API Token từ Sepay để bảo mật Webhook (BẮT BUỘC)
+  api_key: "0Tat*OaI3]^ba;0@"
   
   # Cổng Webhook Server chạy trên plugin này
   # Bạn cần mở port này (Port Forwarding) để Sepay có thể gọi vào
-  webhook_port: 25580
+  webhook_port: 30079
 
 transaction:
-  # Tiền tố nội dung chuyển khoản. VD: NAP <TênPlayer>
-  # Khi tạo QR, nội dung sẽ là: prefix + user_name
-  # Lưu ý: Sepay cần cấu hình mapping để nhận diện được tiền tố này nếu cần, 
-  # hoặc Webhook sẽ nhận toàn bộ nội dung transaction.
-  # Ở plugin này, logic check sẽ là: description CÓ CHỨA mã giao dịch.
+  # Tiền tố: NAP <TênPlayer>
   content_prefix: "NAP "
   
-  # Tỉ lệ quy đổi (nếu dùng lệnh eco give)
-  # 1 VND = bao nhiêu tiền game?
-  # Nếu dùng command tùy chỉnh bên dưới để set cứng thì có thể bỏ qua.
+  # Tỉ lệ quy đổi
+  # Ví dụ: 10,000 VND = 10 Points -> Exchange rate = 0.001
+  # Ví dụ: 10,000 VND = 10,000 Points -> Exchange rate = 1.0
   exchange_rate: 1.0
 
 actions:
   # Lệnh chạy khi nạp thành công
-  # %player%: Tên người chơi
-  # %amount%: Số tiền nạp
-  # %game_money%: Số tiền nạp * exchange_rate
+  # Hỗ trợ PlayerPoints:
+  # Lệnh: points give <player> <amount>
   on_success:
-    - "eco give %player% %game_money%"
-    - "broadcast &aNgười chơi %player% vừa nạp %amount% VNĐ!"
+    # PlayerPoints Command
+    - "points give %player% %game_money%"
+    
+    # Vault / Essentials Command (Bỏ comment nếu dùng)
+    # - "eco give %player% %game_money%"
+    
+    # Thông báo
+    - "broadcast &aNgười chơi %player% vừa nạp %amount% VNĐ và nhận được %game_money% Points!"
 
 messages:
   prefix: "&8[&aSepay&8] &r"
