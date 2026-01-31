@@ -120,7 +120,9 @@ public class WebhookServer extends NanoHTTPD {
                      }
                      
                      // Play Effects
-                     plugin.getEffectManager().playSuccessEffects((org.bukkit.entity.Player)player, amount, gameMoney);
+                     if (player.isOnline()) {
+                         plugin.getEffectManager().playSuccessEffects(player.getPlayer(), amount, gameMoney);
+                     }
                      
                      plugin.getDatabaseManager().saveTransaction(txnId, playerName, amount, content, "SUCCESS");
                      plugin.sendDiscordLog(playerName, amount, txnId); // Discord Log

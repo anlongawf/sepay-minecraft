@@ -1,7 +1,7 @@
 package vn.sepay.plugin.utils;
 
 import vn.sepay.plugin.SepayPlugin;
-import net.md_5.bungee.api.ChatColor;
+import org.bukkit.ChatColor;
 import org.bukkit.Color;
 import org.bukkit.FireworkEffect;
 import org.bukkit.Location;
