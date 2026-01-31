@@ -9,6 +9,9 @@
 #    - Kiểu xác thực: "Không cần chứng thực"
 #    - Content-Type: "application/json"
 # =============================================================
+# 💎 TÀI TRỢ HOSTING: https://cloudcheap.asia/
+# 💬 DISCORD SUPPORT: https://discord.gg/k99aC2mYJj
+# =============================================================
 
 sepay:
   # Số tài khoản ngân hàng nhận tiền
@@ -59,7 +62,7 @@ transaction:
   # Tỷ lệ quy đổi: Points = Số tiền nạp * exchange_rate
   # VD: 10,000đ nạp vào nhận 10,000 Points thì để 1.0
   # VD: 10,000đ nạp vào nhận 10 Points thì để 0.001
-  exchange_rate: 1.0
+  exchange_rate: 0.001
 
 # Hiệu ứng lung linh khi nạp thành công
 effects:
