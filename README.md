@@ -5,6 +5,8 @@ SepayPlugin - Nạp tiền tự động qua QR Code
 Tích hợp cổng thanh toán Sepay.vn vào máy chủ Minecraft (Paper 1.21).
 Hỗ trợ tạo QR Code ngân hàng tự động và xử lý giao dịch qua Webhook.
 
+[📥 Tải xuống bản build mới nhất tại đây](https://github.com/anlongawf/sepay-minecraft/actions) (Chọn bản build gần nhất -> Kéo xuống mục Artifacts)
+
 Tính năng
 - Command /nap <số tiền>: Tạo bản đồ chứa QR Code chuyển khoản chính xác.
 - Tự động cộng tiền: Xử lý callback từ Sepay Webhook và chạy lệnh nạp (Vault/Console).
