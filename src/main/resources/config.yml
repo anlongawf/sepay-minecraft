@@ -1,97 +1,105 @@
-# Cấu hình Sepay Plugin
-# API Key lấy tại https://sepay.vn
+# =============================================================
+#              SEPAY PLUGIN CONFIGURATION - V2.0
+# =============================================================
+# HƯỚNG DẪN CÀI ĐẶT WEBHOOK TRÊN SEPAY.VN:
+# 1. Truy cập https://sepay.vn -> Webhook.
+# 2. Thêm mới Webhook với cấu hình sau:
+#    - URL: http://<IP_MÁY_CHỦ_CỦA_BẠN>:<PORT>
+#    - Ví dụ: http://123.45.67.89:30079
+#    - Kiểu xác thực: "Không cần chứng thực"
+#    - Content-Type: "application/json"
+# =============================================================
 
 sepay:
   # Số tài khoản ngân hàng nhận tiền
   account_number: "0903982264"
   
   # Mã ngân hàng (VD: MB, VCB, ACB, TPB...)
+  # Danh sách mã xem tại Sepay.vn
   bank_code: "MB"
   
-  # Tên chủ tài khoản (Không dấu, in hoa) hiển thị trên QR
+  # Tên chủ tài khoản (In hoa không dấu)
   account_name: "PHAN QUOC AN"
   
-  # API Token từ Sepay để bảo mật Webhook (BẮT BUỘC)
+  # API Token lấy tại Sepay.vn -> Tích hợp API
+  # Đây là lớp bảo mật giúp plugin xác nhận yêu cầu gửi từ Sepay là thật
   api_key: "0Tat*OaI3]^ba;0@"
   
-  # Cổng Webhook Server chạy trên plugin này
-  # Bạn cần mở port này (Port Forwarding) để Sepay có thể gọi vào
+  # Cổng (Port) để nhận thông báo từ Sepay
+  # Bạn CẦN MỞ PORT này trên Firewall/VPS (Port Forwarding)
   webhook_port: 30079
 
+# Cấu hình lưu trữ giao dịch
 database:
-  # Loại cơ sở dữ liệu: sqlite hoặc mysql
+  # sqlite: Lưu vào file database.db (Được khuyên dùng, đơn giản)
+  # mysql: Dùng nếu bạn muốn quản lý dữ liệu tập trung
   type: "sqlite"
   
-  # Cấu hình MySQL (chỉ cần nếu type: mysql)
+  # Thông tin MySQL (Chỉ dùng nếu type là mysql)
   host: "localhost"
   port: 3306
   database: "minecraft"
   username: "root"
   password: ""
 
+# Thông báo về Discord khi có người nạp
 discord:
-  # Webhook URL của kênh Discord nhận thông báo (để trống nếu không dùng)
+  # Dán Webhook URL của kênh Discord vào đây (Để trống để tắt)
   webhook_url: ""
   
-  # Nội dung thông báo (Embed)
-  title: "Giao dịch thành công!"
-  color: "#00FF00" # Mã màu HEX
-  footer: "Sepay Payment Gateway"
+  title: "⭐ Giao dịch thành công!"
+  color: "#00FF00" # Mã màu xanh lá
+  footer: "Sepay Payment System"
 
 transaction:
-  # Tiền tố: NAP <TênPlayer>
+  # Cú pháp QR: NAP <TênNgườiChơi>
+  # Đừng thay đổi nếu bạn không hiểu cách regex hoạt động
   content_prefix: "NAP "
   
-  # Tỉ lệ quy đổi
-  # Ví dụ: 10,000 VND = 10 Points -> Exchange rate = 0.001
-  # Ví dụ: 10,000 VND = 10,000 Points -> Exchange rate = 1.0
-  content_prefix: "NAP "
-  
-  # Tỉ lệ quy đổi
-  # Ví dụ: 10,000 VND = 10 Points -> Exchange rate = 0.001
-  # Ví dụ: 10,000 VND = 10,000 Points -> Exchange rate = 1.0
+  # Tỷ lệ quy đổi: Points = Số tiền nạp * exchange_rate
+  # VD: 10,000đ nạp vào nhận 10,000 Points thì để 1.0
+  # VD: 10,000đ nạp vào nhận 10 Points thì để 0.001
   exchange_rate: 1.0
 
+# Hiệu ứng lung linh khi nạp thành công
 effects:
-  # Hiệu ứng khi nạp thành công
-  # Title: Thông báo lớn giữa màn hình
+  # Thông báo chữ lớn giữa màn hình
   title:
     enabled: true
     title: "&a&lNẠP THẺ THÀNH CÔNG"
-    subtitle: "&eBạn nhận được &f%game_money% Points"
+    subtitle: "&eBạn đã nhận được &f%game_money% Points"
     fade_in: 10
     stay: 70
     fade_out: 20
     
-  # Pháo hoa: Bắn pháo hoa tại vị trí người chơi
+  # Bắn pháo hoa tại chỗ người chơi
   firework:
     enabled: true
     power: 1
     type: "BALL_LARGE" # BALL, BALL_LARGE, STAR, BURST, CREEPER
-    colors: # Mã màu RGB hoặc tên màu
+    colors:
       - "RED"
       - "YELLOW"
       - "GREEN"
 
+# Lệnh chạy tự động khi nạp thành công
 actions:
-  # Lệnh chạy khi nạp thành công
-  # Hỗ trợ PlayerPoints:
-  # Lệnh: points give <player> <amount>
+  # %player%: Tên người chơi
+  # %amount%: Số tiền VNĐ được nạp
+  # %game_money%: Số Points đã quy đổi
   on_success:
-    # PlayerPoints Command
+    # Lệnh nạp cho PlayerPoints
     - "points give %player% %game_money%"
     
-    # Vault / Essentials Command (Bỏ comment nếu dùng)
-    # - "eco give %player% %game_money%"
-    
-    # Thông báo
-    - "broadcast &aNgười chơi %player% vừa nạp %amount% VNĐ và nhận được %game_money% Points!"
+    # Lệnh thông báo toàn server
+    - "broadcast &8[&aSepay&8] &bNgười chơi &f%player% &bvừa ủng hộ &f%,0f VNĐ&b. Cảm ơn đại gia!"
 
+# Ngôn ngữ trong game
 messages:
   prefix: "&8[&aSepay&8] &r"
   only_player: "&cLệnh này chỉ dành cho người chơi!"
-  invalid_amount: "&cSố tiền không hợp lệ! Vui lòng nhập số > 1000."
-  generating_qr: "&eĐang tạo mã QR... Vui lòng giữ trống 1 ô trên tay."
-  map_given: "&aĐã cấp mã QR! Hãy cầm bản đồ để quét."
-  inventory_full: "&cTúi đồ đầy! Không thể nhận bản đồ QR."
-  success: "&aNạp thẻ thành công! Cảm ơn bạn."
+  invalid_amount: "&cSố tiền không hợp lệ! Vui lòng nạp tối thiểu 1,000 VNĐ."
+  generating_qr: "&eĐang khởi tạo mã QR... Đừng đóng túi đồ nhé!"
+  map_given: "&aMã QR đã sẵn sàng! Bạn hãy cầm bản đồ và quét để thanh toán."
+  inventory_full: "&cTúi đồ của bạn đã đầy, không thể nhận bản đồ QR."
+  success: "&aCảm ơn bạn đã ủng hộ máy chủ!"
