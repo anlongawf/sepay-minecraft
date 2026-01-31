@@ -1,72 +1,44 @@
-# =============================================================
-#              SEPAY PLUGIN CONFIGURATION - V2.0
-# =============================================================
-# HƯỚNG DẪN CÀI ĐẶT WEBHOOK TRÊN SEPAY.VN:
-# 1. Truy cập https://sepay.vn -> Webhook.
-# 2. Thêm mới Webhook với cấu hình sau:
-#    - URL: http://<IP_MÁY_CHỦ_CỦA_BẠN>:<PORT>
-#    - Ví dụ: http://123.45.67.89:30079
-#    - Kiểu xác thực: "Không cần chứng thực"
-#    - Content-Type: "application/json"
-# =============================================================
-# 💎 TÀI TRỢ HOSTING: https://cloudcheap.asia/
-# 💬 DISCORD SUPPORT: https://discord.gg/k99aC2mYJj
-# =============================================================
+HƯỚNG DẪN CÀI ĐẶT WEBHOOK SEPAY.VN:
+1. Tại cấu hình Webhook trên Sepay.vn, mục "Kiểu chứng thực" hãy chọn: "API Key"
+2. Dán API Key từ bên dưới vào mục "API Key" trên Sepay.vn
+3. "URL gọi đến" điền: http://<IP_VPS_CUA_BAN>:30079
+4. "Request Content type" chọn: application/json
+
+💎 TÀI TRỢ HOSTING: https://cloudcheap.asia/
+💬 DISCORD SUPPORT: https://discord.gg/k99aC2mYJj
 
 sepay:
-  # Số tài khoản ngân hàng nhận tiền
   account_number: "0903982264"
-  
-  # Mã ngân hàng (VD: MB, VCB, ACB, TPB...)
-  # Danh sách mã xem tại Sepay.vn
   bank_code: "MB"
-  
-  # Tên chủ tài khoản (In hoa không dấu)
   account_name: "PHAN QUOC AN"
   
-  # API Token lấy tại Sepay.vn -> Tích hợp API
-  # Đây là lớp bảo mật giúp plugin xác nhận yêu cầu gửi từ Sepay là thật
+  # API Key này dùng cho mục "Cấu hình chứng thực WebHooks" trên Sepay.vn
   api_key: "0Tat*OaI3]^ba;0@"
   
-  # Cổng (Port) để nhận thông báo từ Sepay
-  # Bạn CẦN MỞ PORT này trên Firewall/VPS (Port Forwarding)
+  # Port này phải khớp với URL gọi đến (VD: 30079)
   webhook_port: 30079
 
-# Cấu hình lưu trữ giao dịch
 database:
-  # sqlite: Lưu vào file database.db (Được khuyên dùng, đơn giản)
-  # mysql: Dùng nếu bạn muốn quản lý dữ liệu tập trung
   type: "sqlite"
-  
-  # Thông tin MySQL (Chỉ dùng nếu type là mysql)
   host: "localhost"
   port: 3306
   database: "minecraft"
   username: "root"
   password: ""
 
-# Thông báo về Discord khi có người nạp
 discord:
-  # Dán Webhook URL của kênh Discord vào đây (Để trống để tắt)
   webhook_url: ""
-  
   title: "⭐ Giao dịch thành công!"
-  color: "#00FF00" # Mã màu xanh lá
+  color: "#00FF00"
   footer: "Sepay Payment System"
 
 transaction:
-  # Cú pháp QR: NAP <TênNgườiChơi>
-  # Đừng thay đổi nếu bạn không hiểu cách regex hoạt động
   content_prefix: "NAP "
   
-  # Tỷ lệ quy đổi: Points = Số tiền nạp * exchange_rate
-  # VD: 10,000đ nạp vào nhận 10,000 Points thì để 1.0
-  # VD: 10,000đ nạp vào nhận 10 Points thì để 0.001
+  # Mặc định: 10,000đ = 10 Points
   exchange_rate: 0.001
 
-# Hiệu ứng lung linh khi nạp thành công
 effects:
-  # Thông báo chữ lớn giữa màn hình
   title:
     enabled: true
     title: "&a&lNẠP THẺ THÀNH CÔNG"
@@ -74,30 +46,20 @@ effects:
     fade_in: 10
     stay: 70
     fade_out: 20
-    
-  # Bắn pháo hoa tại chỗ người chơi
   firework:
     enabled: true
     power: 1
-    type: "BALL_LARGE" # BALL, BALL_LARGE, STAR, BURST, CREEPER
+    type: "BALL_LARGE"
     colors:
       - "RED"
       - "YELLOW"
       - "GREEN"
 
-# Lệnh chạy tự động khi nạp thành công
 actions:
-  # %player%: Tên người chơi
-  # %amount%: Số tiền VNĐ được nạp
-  # %game_money%: Số Points đã quy đổi
   on_success:
-    # Lệnh nạp cho PlayerPoints
     - "points give %player% %game_money%"
-    
-    # Lệnh thông báo toàn server
     - "broadcast &8[&aSepay&8] &bNgười chơi &f%player% &bvừa ủng hộ &f%,0f VNĐ&b. Cảm ơn đại gia!"
 
-# Ngôn ngữ trong game
 messages:
   prefix: "&8[&aSepay&8] &r"
   only_player: "&cLệnh này chỉ dành cho người chơi!"
