@@ -12,7 +12,8 @@ sepay:
   bank_code: "MB"
   account_name: "PHAN QUOC AN"
   
-  # API Key này dùng cho mục "Cấu hình chứng thực WebHooks" trên Sepay.vn
+  # Bạn tự đặt API Key này (Ví dụ: abc123xyz...)
+  # Sau đó dán chính xác vào mục "API Key" trong "Cấu hình chứng thực WebHooks" trên Sepay.vn
   api_key: "0Tat*OaI3]^ba;0@"
   
   # Port này phải khớp với URL gọi đến (VD: 30079)
