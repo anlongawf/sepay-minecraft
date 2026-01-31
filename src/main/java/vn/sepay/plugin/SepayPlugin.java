@@ -1,9 +1,11 @@
 package vn.sepay.plugin;
 
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import vn.sepay.plugin.command.NapCommand;
 import vn.sepay.plugin.command.SepayReloadCommand;
 import vn.sepay.plugin.config.ConfigManager;
+import vn.sepay.plugin.listener.PlayerJoinListener;
 import vn.sepay.plugin.webhook.WebhookServer;
 import java.util.logging.Logger;
 
@@ -12,6 +14,7 @@ public class SepayPlugin extends JavaPlugin {
     private static SepayPlugin instance;
     private ConfigManager configManager;
     private WebhookServer webhookServer;
+    private vn.sepay.plugin.database.DatabaseManager databaseManager;
     
     @Override
     public void onEnable() {
@@ -20,11 +23,15 @@ public class SepayPlugin extends JavaPlugin {
         saveDefaultConfig();
         
         this.configManager = new ConfigManager(this);
+        this.databaseManager = new vn.sepay.plugin.database.DatabaseManager(this);
         
         // Register Commands
         getCommand("nap").setExecutor(new NapCommand(this));
         getCommand("sepayreload").setExecutor(new SepayReloadCommand(this));
         
+        // Register Event
+        getServer().getPluginManager().registerEvents(new PlayerJoinListener(this), this);
+
         // Start Webhook
         startWebhook();
         
@@ -74,9 +81,36 @@ public class SepayPlugin extends JavaPlugin {
         if (webhookServer != null) {
             webhookServer.stop();
         }
+        if (databaseManager != null) {
+            databaseManager.close();
+        }
         getLogger().info("SepayPlugin has been disabled!");
     }
     
+    public vn.sepay.plugin.database.DatabaseManager getDatabaseManager() {
+        return databaseManager;
+    }
+    
+    public void sendDiscordLog(String user, double amount, String id) {
+        Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
+            String url = getConfig().getString("discord.webhook_url");
+            if (url == null || url.isEmpty()) return;
+            
+            String title = getConfig().getString("discord.title", "Donation Received");
+            String footer = getConfig().getString("discord.footer", "Sepay");
+            String colorHex = getConfig().getString("discord.color", "#00FF00");
+            int color = 65280; // Default Green
+            try { color = Integer.decode(colorHex); } catch (Exception e) {}
+            
+            String desc = "**User:** " + user + "\n" +
+                          "**Amount:** " + String.format("%,.0f", amount) + " VNĐ\n" +
+                          "**ID:** " + id;
+                          
+            String json = vn.sepay.plugin.utils.DiscordWebhook.buildEmbedJson(title, desc, color, footer);
+            new vn.sepay.plugin.utils.DiscordWebhook(url).send(json);
+        });
+    }
+
     public void startWebhook() {
         if (webhookServer != null) {
             webhookServer.stop();

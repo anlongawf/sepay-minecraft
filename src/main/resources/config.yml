@@ -18,6 +18,26 @@ sepay:
   # Bạn cần mở port này (Port Forwarding) để Sepay có thể gọi vào
   webhook_port: 30079
 
+database:
+  # Loại cơ sở dữ liệu: sqlite hoặc mysql
+  type: "sqlite"
+  
+  # Cấu hình MySQL (chỉ cần nếu type: mysql)
+  host: "localhost"
+  port: 3306
+  database: "minecraft"
+  username: "root"
+  password: ""
+
+discord:
+  # Webhook URL của kênh Discord nhận thông báo (để trống nếu không dùng)
+  webhook_url: ""
+  
+  # Nội dung thông báo (Embed)
+  title: "Giao dịch thành công!"
+  color: "#00FF00" # Mã màu HEX
+  footer: "Sepay Payment Gateway"
+
 transaction:
   # Tiền tố: NAP <TênPlayer>
   content_prefix: "NAP "

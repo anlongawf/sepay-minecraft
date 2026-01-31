@@ -18,36 +18,10 @@ import java.util.regex.Pattern;
 public class WebhookServer extends NanoHTTPD {
 
     private final SepayPlugin plugin;
-    private final Set<String> processedTransactions = new HashSet<>();
-    private final File logFile;
-
+    
     public WebhookServer(SepayPlugin plugin, int port) {
         super(port);
         this.plugin = plugin;
-        this.logFile = new File(plugin.getDataFolder(), "processed_transactions.txt");
-        loadProcessedTransactions();
-    }
-
-    private void loadProcessedTransactions() {
-        if (!logFile.exists()) return;
-        try (BufferedReader reader = new BufferedReader(new FileReader(logFile))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                processedTransactions.add(line.trim());
-            }
-        } catch (IOException e) {
-            plugin.getLogger().warning("Failed to load processed transactions.");
-        }
-    }
-
-    private void logTransaction(String id) {
-        processedTransactions.add(id);
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(logFile, true))) {
-            writer.write(id);
-            writer.newLine();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     @Override
@@ -92,7 +66,7 @@ public class WebhookServer extends NanoHTTPD {
                  transactionId = String.valueOf(json.get("referenceCode"));
             }
 
-            if (processedTransactions.contains(transactionId)) {
+            if (plugin.getDatabaseManager().isTransactionProcessed(transactionId)) {
                  plugin.getLogger().info("[Sepay] Duplicate transaction ignored: " + transactionId);
                  return newFixedLengthResponse(Response.Status.OK, MIME_PLAINTEXT, "Already Processed");
             }
@@ -130,22 +104,30 @@ public class WebhookServer extends NanoHTTPD {
             
             Bukkit.getScheduler().runTask(plugin, () -> {
                 OfflinePlayer player = Bukkit.getOfflinePlayer(playerName);
-                // Basic validation: Check if player has played before if we want to be strict
-                // if (player.hasPlayedBefore() || player.isOnline()) ...
-                // For now, allow any valid username format.
+                // Allow processing even if player object is minimal (Paper usually handles getOfflinePlayer well)
+                // We check if they have played before or if server allows new players (usually safe to assume valid if name matches)
                 
-                double rate = plugin.getConfigManager().getExchangeRate();
-                double gameMoney = amount * rate;
-                
-                for (String cmd : plugin.getConfigManager().getSuccessCommands()) {
-                    String run = cmd.replace("%player%", playerName)
-                                    .replace("%amount%", String.valueOf((long)amount))
-                                    .replace("%game_money%", String.valueOf((long)gameMoney)); // Cast to long to remove .0
-                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), run);
-                }
-                
-                logTransaction(txnId);
-                plugin.getLogger().info("Processed donation for " + playerName + ": " + amount);
+                 if (player.isOnline()) {
+                     double exchangeRate = plugin.getConfigManager().getExchangeRate();
+                     double gameMoney = amount * exchangeRate;
+                     
+                     // Execute Command
+                     for (String cmd : plugin.getConfigManager().getSuccessCommands()) {
+                         String run = cmd.replace("%player%", playerName)
+                                         .replace("%amount%", String.valueOf((long)amount))
+                                         .replace("%game_money%", String.valueOf((long)gameMoney));
+                         Bukkit.dispatchCommand(Bukkit.getConsoleSender(), run);
+                     }
+                     
+                     plugin.getDatabaseManager().saveTransaction(txnId, playerName, amount, content, "SUCCESS");
+                     plugin.sendDiscordLog(playerName, amount, txnId); // Discord Log
+                     plugin.getLogger().info("[Sepay] Processed donation for " + playerName + ": " + amount);
+                 } else {
+                     // Offline -> Pending
+                     plugin.getDatabaseManager().saveTransaction(txnId, playerName, amount, content, "PENDING");
+                     plugin.sendDiscordLog(playerName, amount, txnId); // Discord Log
+                     plugin.getLogger().info("[Sepay] Player offline. Saved as PENDING for " + playerName);
+                 }
             });
         }
     }
