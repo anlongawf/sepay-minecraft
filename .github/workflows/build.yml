@@ -27,4 +27,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: SepayPlugin-Latest
-        path: target/SepayPlugin-*-shaded.jar
+        path: target/SepayPlugin-*.jar
