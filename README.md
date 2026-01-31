@@ -24,6 +24,9 @@ Xem chi tiết tại [INSTALL.md](INSTALL.md).
 ---
 
 ## ☕ Donate & Support
+Nếu cần hỗ trợ cài đặt hoặc báo lỗi, hãy tham gia Discord:
+👉 **[Discord Support](https://discord.gg/k99aC2mYJj)**
+
 Nếu plugin hữu ích, bạn có thể mời mình một ly cà phê nhé!
 - **Ngân hàng**: MB Bank
 - **Số tài khoản**: `0903982264`
