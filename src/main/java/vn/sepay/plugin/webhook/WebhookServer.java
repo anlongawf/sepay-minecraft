@@ -119,6 +119,9 @@ public class WebhookServer extends NanoHTTPD {
                          Bukkit.dispatchCommand(Bukkit.getConsoleSender(), run);
                      }
                      
+                     // Play Effects
+                     plugin.getEffectManager().playSuccessEffects((org.bukkit.entity.Player)player, amount, gameMoney);
+                     
                      plugin.getDatabaseManager().saveTransaction(txnId, playerName, amount, content, "SUCCESS");
                      plugin.sendDiscordLog(playerName, amount, txnId); // Discord Log
                      plugin.getLogger().info("[Sepay] Processed donation for " + playerName + ": " + amount);

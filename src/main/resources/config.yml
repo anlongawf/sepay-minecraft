@@ -45,7 +45,33 @@ transaction:
   # Tỉ lệ quy đổi
   # Ví dụ: 10,000 VND = 10 Points -> Exchange rate = 0.001
   # Ví dụ: 10,000 VND = 10,000 Points -> Exchange rate = 1.0
+  content_prefix: "NAP "
+  
+  # Tỉ lệ quy đổi
+  # Ví dụ: 10,000 VND = 10 Points -> Exchange rate = 0.001
+  # Ví dụ: 10,000 VND = 10,000 Points -> Exchange rate = 1.0
   exchange_rate: 1.0
+
+effects:
+  # Hiệu ứng khi nạp thành công
+  # Title: Thông báo lớn giữa màn hình
+  title:
+    enabled: true
+    title: "&a&lNẠP THẺ THÀNH CÔNG"
+    subtitle: "&eBạn nhận được &f%game_money% Points"
+    fade_in: 10
+    stay: 70
+    fade_out: 20
+    
+  # Pháo hoa: Bắn pháo hoa tại vị trí người chơi
+  firework:
+    enabled: true
+    power: 1
+    type: "BALL_LARGE" # BALL, BALL_LARGE, STAR, BURST, CREEPER
+    colors: # Mã màu RGB hoặc tên màu
+      - "RED"
+      - "YELLOW"
+      - "GREEN"
 
 actions:
   # Lệnh chạy khi nạp thành công

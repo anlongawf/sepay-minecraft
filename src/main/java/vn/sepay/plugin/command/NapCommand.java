@@ -27,6 +27,7 @@ public class NapCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         if (!(sender instanceof Player)) {
+            // Support console for reload/top/history maybe? For now restrict basic usage.
             sender.sendMessage(plugin.getConfigManager().getMessage("only_player"));
             return true;
         }
@@ -34,48 +35,100 @@ public class NapCommand implements CommandExecutor {
         Player player = (Player) sender;
 
         if (args.length < 1) {
-            player.sendMessage("§cUsage: /nap <amount>");
+            sendHelp(player);
             return true;
         }
 
-        double amount;
-        try {
-            amount = Double.parseDouble(args[0]);
-            if (amount < 1000) throw new NumberFormatException();
-        } catch (NumberFormatException e) {
-            player.sendMessage(plugin.getConfigManager().getMessage("invalid_amount"));
-            return true;
-        }
+        String sub = args[0].toLowerCase();
         
-        // Remove decimals for QR url usually to look clean
+        switch (sub) {
+            case "top":
+                showTop(player);
+                break;
+            case "history":
+                String target = (args.length > 1) ? args[1] : player.getName();
+                if (!player.hasPermission("sepay.admin") && !target.equalsIgnoreCase(player.getName())) {
+                     player.sendMessage("§cBạn chỉ có thể xem lịch sử của chính mình.");
+                     return true;
+                }
+                showHistory(player, target);
+                break;
+            default:
+                // Handle as amount
+                 try {
+                     double amount = Double.parseDouble(args[0]);
+                     if (amount < 1000) throw new NumberFormatException();
+                     generateQR(player, amount);
+                 } catch (NumberFormatException e) {
+                     sendHelp(player);
+                 }
+        }
+        return true;
+    }
+    
+    private void sendHelp(Player p) {
+        p.sendMessage("§e===== SEPAY COMMANDS =====");
+        p.sendMessage("§a/nap <số tiền> §7- Tạo mã QR nạp tiền.");
+        p.sendMessage("§a/nap top §7- Xem BXH nạp thẻ.");
+        p.sendMessage("§a/nap history [player] §7- Xem lịch sử giao dịch.");
+    }
+    
+    private void showTop(Player p) {
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+            p.sendMessage("§eĐang tải dữ liệu...");
+            java.util.List<String> top = plugin.getDatabaseManager().getTopDonors(10);
+            p.sendMessage("§6🏆 BẢNG XẾP HẠNG NẠP THẺ 🏆");
+            if (top.isEmpty()) {
+                p.sendMessage("§7Chưa có dữ liệu.");
+            } else {
+                for (String line : top) {
+                    p.sendMessage("§e" + line);
+                }
+            }
+        });
+    }
+    
+    private void showHistory(Player p, String target) {
+        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+             p.sendMessage("§eĐang tải lịch sử của " + target + "...");
+             java.util.List<String> history = plugin.getDatabaseManager().getTransactionHistory(target, 10);
+             p.sendMessage("§6📜 LỊCH SỬ GIAO DỊCH: " + target);
+             if (history.isEmpty()) {
+                 p.sendMessage("§7Không tìm thấy giao dịch nào.");
+             } else {
+                 for (String line : history) {
+                     p.sendMessage("§f" + line);
+                 }
+             }
+        });
+    }
+
+    private void generateQR(Player player, double amount) {
         long amountLong = (long) amount;
 
         // Verify inventory space
         if (player.getInventory().firstEmpty() == -1) {
             player.sendMessage(plugin.getConfigManager().getMessage("inventory_full"));
-            return true;
+            return;
         }
 
         ConfigManager cfg = plugin.getConfigManager();
         String prefix = cfg.getContentPrefix();
-        String content = prefix + player.getName(); // Format: NAP PlayerName
+        String content = prefix + player.getName(); 
         
         player.sendMessage(cfg.getMessage("generating_qr"));
 
-        // Async URL Generation and Image Loading
+        // Async URL Generation
         Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
             try {
                 String encodedContent = URLEncoder.encode(content, StandardCharsets.UTF_8.toString());
                 String bank = cfg.getBankCode();
                 String acc = cfg.getAccountNumber();
-                // Sepay URL
                 String url = String.format("https://qr.sepay.vn/img?bank=%s&acc=%s&template=compact&amount=%d&des=%s",
                         bank, acc, amountLong, encodedContent);
 
-                // Pre-load renderer
                 QRMapRenderer renderer = new QRMapRenderer(url);
 
-                // Sync back to give item
                 Bukkit.getScheduler().runTask(plugin, () -> {
                     ItemStack mapItem = new ItemStack(Material.FILLED_MAP);
                     MapMeta meta = (MapMeta) mapItem.getItemMeta();
@@ -97,7 +150,5 @@ public class NapCommand implements CommandExecutor {
                 player.sendMessage("§cError creating QR Code.");
             }
         });
-
-        return true;
     }
 }

@@ -15,6 +15,7 @@ public class SepayPlugin extends JavaPlugin {
     private ConfigManager configManager;
     private WebhookServer webhookServer;
     private vn.sepay.plugin.database.DatabaseManager databaseManager;
+    private vn.sepay.plugin.utils.EffectManager effectManager;
     
     @Override
     public void onEnable() {
@@ -24,6 +25,7 @@ public class SepayPlugin extends JavaPlugin {
         
         this.configManager = new ConfigManager(this);
         this.databaseManager = new vn.sepay.plugin.database.DatabaseManager(this);
+        this.effectManager = new vn.sepay.plugin.utils.EffectManager(this);
         
         // Register Commands
         getCommand("nap").setExecutor(new NapCommand(this));
@@ -89,6 +91,10 @@ public class SepayPlugin extends JavaPlugin {
     
     public vn.sepay.plugin.database.DatabaseManager getDatabaseManager() {
         return databaseManager;
+    }
+    
+    public vn.sepay.plugin.utils.EffectManager getEffectManager() {
+        return effectManager;
     }
     
     public void sendDiscordLog(String user, double amount, String id) {

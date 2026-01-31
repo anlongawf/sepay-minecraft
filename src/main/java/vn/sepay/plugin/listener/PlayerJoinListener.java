@@ -41,6 +41,9 @@ public class PlayerJoinListener implements Listener {
                         Bukkit.dispatchCommand(Bukkit.getConsoleSender(), run);
                     }
                     
+                    // Play Effects
+                    plugin.getEffectManager().playSuccessEffects(event.getPlayer(), amount, gameMoney);
+                    
                     // Mark as SUCCESS
                     Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
                         plugin.getDatabaseManager().updateStatus(txn.getId(), "SUCCESS");

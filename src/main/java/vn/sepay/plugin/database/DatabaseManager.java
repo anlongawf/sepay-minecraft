@@ -136,6 +136,42 @@ public class DatabaseManager {
         return list;
     }
 
+    public List<String> getTopDonors(int limit) {
+        List<String> list = new ArrayList<>();
+        String sql = "SELECT player_name, SUM(amount) as total FROM sepay_transactions WHERE status = 'SUCCESS' GROUP BY player_name ORDER BY total DESC LIMIT ?";
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, limit);
+            try (ResultSet rs = ps.executeQuery()) {
+                int rank = 1;
+                while (rs.next()) {
+                    list.add(String.format("#%d. %s - %,.0f VNĐ", 
+                        rank++, rs.getString("player_name"), rs.getDouble("total")));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+    
+    public List<String> getTransactionHistory(String playerName, int limit) {
+        List<String> list = new ArrayList<>();
+        String sql = "SELECT * FROM sepay_transactions WHERE player_name = ? ORDER BY created_at DESC LIMIT ?";
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, playerName);
+            ps.setInt(2, limit);
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    list.add(String.format("[%s] %,.0f VNĐ - %s", 
+                        rs.getString("created_at"), rs.getDouble("amount"), rs.getString("status")));
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
     public Connection getConnection() throws SQLException {
         return dataSource.getConnection();
     }
