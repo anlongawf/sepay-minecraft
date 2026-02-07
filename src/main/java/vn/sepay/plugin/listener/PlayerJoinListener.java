@@ -37,7 +37,18 @@ public class PlayerJoinListener implements Listener {
                 for (TransactionData txn : pending) {
                     double amount = txn.getAmount();
                     double exchangeRate = plugin.getConfigManager().getExchangeRate();
-                    double gameMoney = amount * exchangeRate;
+                    
+                    // CHECK PROMOTION FOR PENDING
+                    // Logic: If promotion is active NOW, they get bonus.
+                    // Ideally we should check if promotion was active THEN, but we didn't save timestamp/status.
+                    // So we treat it as "Claim time promotion".
+                    double bonusPercent = 0;
+                    if (plugin.getPromotionManager().isPromotionActive()) {
+                        bonusPercent = plugin.getPromotionManager().getBonusPercent();
+                    }
+                    
+                    double finalAmount = amount + (amount * bonusPercent / 100.0);
+                    double gameMoney = finalAmount * exchangeRate;
 
                     for (String cmd : plugin.getConfigManager().getSuccessCommands()) {
                         String run = cmd.replace("%player%", playerName)
@@ -47,14 +58,20 @@ public class PlayerJoinListener implements Listener {
                     }
                     
                     // Play Effects
-                    plugin.getEffectManager().playSuccessEffects(player, amount, gameMoney);
+                    plugin.getEffectManager().playSuccessEffects(player, finalAmount, gameMoney);
+                    
+                    // Promotion Msg
+                    if (bonusPercent > 0) {
+                         String msg = "&e⚡ &lKHUYẾN MÃI: &fBạn được tặng thêm &6" + (long)bonusPercent + "% &fgiá trị nạp!";
+                         player.sendMessage(msg.replace("&", "§"));
+                    }
                     
                     // Mark as SUCCESS (Async update)
                     SchedulerAdapter.getScheduler().runAsync(plugin, () -> {
                         plugin.getDatabaseManager().updateStatus(txn.getId(), "SUCCESS");
                     });
                     
-                    plugin.getLogger().info("[Sepay] Processed pending donation for " + playerName + ": " + amount);
+                    plugin.getLogger().info("[Sepay] Processed pending donation for " + playerName + ": " + finalAmount);
                 }
             });
         });

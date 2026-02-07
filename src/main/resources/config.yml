@@ -19,6 +19,20 @@ sepay:
   # Port này phải khớp với URL gọi đến (VD: 30079)
   webhook_port: 30079
 
+promotion:
+  enabled: true
+  bonus_percent: 20
+  # Múi giờ server: Asia/Ho_Chi_Minh (Cố định, không cần chỉnh)
+  
+  # Khung giờ vàng (HH:mm - HH:mm)
+  happy_hours:
+    - "18:00-21:00"
+    
+  # Ngày vàng (Tên tiếng Anh in hoa: MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY)
+  happy_days:
+    - "SATURDAY"
+    - "SUNDAY"
+
 database:
   type: "sqlite"
   host: "localhost"

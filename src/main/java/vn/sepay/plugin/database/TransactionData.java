@@ -17,6 +17,7 @@ public class TransactionData {
 
     public String getId() { return id; }
     public String getPlayerName() { return playerName; }
+    public String getPlayer() { return playerName; } // Alias for convenience
     public double getAmount() { return amount; }
     public String getContent() { return content; }
     public String getStatus() { return status; }

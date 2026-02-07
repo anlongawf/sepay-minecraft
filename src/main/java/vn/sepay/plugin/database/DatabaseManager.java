@@ -172,6 +172,38 @@ public class DatabaseManager {
         return list;
     }
 
+    private final List<TransactionData> cachedTopDonors = new ArrayList<>();
+
+    public List<TransactionData> getCachedTopDonors() {
+        return cachedTopDonors;
+    }
+
+    public void updateTopDonorsCache() {
+        String sql = "SELECT player_name, SUM(amount) as total FROM sepay_transactions WHERE status = 'SUCCESS' GROUP BY player_name ORDER BY total DESC LIMIT 10";
+        try (Connection conn = getConnection(); PreparedStatement ps = conn.prepareStatement(sql)) {
+            try (ResultSet rs = ps.executeQuery()) {
+                List<TransactionData> newList = new ArrayList<>();
+                while (rs.next()) {
+                    // Reusing TransactionData to store name and total amount
+                    // ID = null, content = null, status = SUCCESS
+                    newList.add(new TransactionData(
+                        null,
+                        rs.getString("player_name"),
+                        rs.getDouble("total"),
+                        null,
+                        "SUCCESS"
+                    ));
+                }
+                synchronized (cachedTopDonors) {
+                    cachedTopDonors.clear();
+                    cachedTopDonors.addAll(newList);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
     public Connection getConnection() throws SQLException {
         return dataSource.getConnection();
     }

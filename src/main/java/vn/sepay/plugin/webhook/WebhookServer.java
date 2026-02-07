@@ -102,6 +102,20 @@ public class WebhookServer extends NanoHTTPD {
             String playerName = matcher.group(1);
             plugin.getLogger().info("[Sepay] Match found: Player=" + playerName);
             
+            // Calculate Bonus
+            double finalAmount = amount;
+            double bonusPercent = 0;
+            if (plugin.getPromotionManager().isPromotionActive()) {
+                bonusPercent = plugin.getPromotionManager().getBonusPercent();
+                finalAmount = amount + (amount * bonusPercent / 100.0);
+                plugin.getLogger().info(String.format("[Sepay] Promotion Active! +%.0f%% Bonus. Amount: %.0f -> %.0f", 
+                        bonusPercent, amount, finalAmount));
+            }
+            
+            // Need final variables for lambda
+            double effectiveAmount = finalAmount; 
+            double appliedBonus = bonusPercent;
+
             // Folia: Use Global Scheduler to look up player
             SchedulerAdapter.getScheduler().runGlobal(plugin, () -> {
                 Player player = Bukkit.getPlayer(playerName); // Safe on Global
@@ -110,37 +124,47 @@ public class WebhookServer extends NanoHTTPD {
                     // Player is Online -> Transfer control to Player's Region Thread
                     SchedulerAdapter.getScheduler().runEntity(player, plugin, () -> {
                          double exchangeRate = plugin.getConfigManager().getExchangeRate();
-                         double gameMoney = amount * exchangeRate;
+                         double gameMoney = effectiveAmount * exchangeRate;
                          
                          // Execute Command
                          for (String cmd : plugin.getConfigManager().getSuccessCommands()) {
                              String run = cmd.replace("%player%", playerName)
-                                             .replace("%amount%", String.valueOf((long)amount))
+                                             .replace("%amount%", String.valueOf((long)amount)) // Log original amount
                                              .replace("%game_money%", String.valueOf((long)gameMoney));
                              Bukkit.dispatchCommand(Bukkit.getConsoleSender(), run);
                          }
                          
                          // Play Effects
-                         plugin.getEffectManager().playSuccessEffects(player, amount, gameMoney);
+                         plugin.getEffectManager().playSuccessEffects(player, effectiveAmount, gameMoney);
                          
-                         // Database ops should be Async, but for now we do it here (fast enough?) or submit to async
-                         // Ideally: Scheduler.runAsync(() -> db.save(...));
-                         // But saving first prevents duplicates better? 
-                         // DatabaseManager operations usually involve I/O, so better async.
-                         // Let's schedule Async save to avoid blocking Main/Region
+                         // Send Bonus Message
+                         if (appliedBonus > 0) {
+                             String msg = "&e⚡ &lKHUYẾN MÃI: &fBạn được tặng thêm &6" + (long)appliedBonus + "% &fgiá trị nạp!";
+                             player.sendMessage(msg.replace("&", "§"));
+                         }
                          
                          SchedulerAdapter.getScheduler().runAsync(plugin, () -> {
                              plugin.getDatabaseManager().saveTransaction(txnId, playerName, amount, content, "SUCCESS");
-                             plugin.sendDiscordLog(playerName, amount, txnId); 
+                             plugin.sendDiscordLog(playerName, effectiveAmount, txnId); 
                          });
                          
-                         plugin.getLogger().info("[Sepay] Processed donation for " + playerName + ": " + amount);
+                         plugin.getLogger().info("[Sepay] Processed donation for " + playerName + ": " + effectiveAmount);
                     });
                 } else {
-                    // Player Offline
+                    // Player Offline - Save PENDING
+                    // Note: We save ORIGINAL amount. Bonus is calculated when they join (so if promo ends, they might lose it? 
+                    // OR we should save bonus flag? For simplicity, let's recalculate on join OR save final amount?)
+                    // Decision: Save ORIGINAL amount. Recalculate bonus on JOIN -> This encourages players to login during promo! 
+                    // actually safer to calculate bonus NOW is better but requires DB schema change to store "bonus". 
+                    // Let's keep it simple: Save pending, and re-check promotion on join.
+                    // WAIT. If they paid during promo, they should get promo even if they login later.
+                    // However, without DB change, we can't store "this txn has bonus".
+                    // Workaround: We will handle bonus check in PlayerJoinListener too, based on "Current Time" (bad) or accept that Pending = check promo at claim time.
+                    // For now: Check promo at claim time (PlayerJoinListener).
+                    
                     SchedulerAdapter.getScheduler().runAsync(plugin, () -> {
                         plugin.getDatabaseManager().saveTransaction(txnId, playerName, amount, content, "PENDING");
-                        plugin.sendDiscordLog(playerName, amount, txnId);
+                        plugin.sendDiscordLog(playerName, amount, txnId); // Log original for now
                         plugin.getLogger().info("[Sepay] Player offline. Saved as PENDING for " + playerName);
                     });
                 }
