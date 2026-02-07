@@ -1,8 +1,8 @@
-HƯỚNG DẪN CÀI ĐẶT WEBHOOK SEPAY.VN:
-1. Tại cấu hình Webhook trên Sepay.vn, mục "Kiểu chứng thực" hãy chọn: "API Key"
-2. Dán API Key từ bên dưới vào mục "API Key" trên Sepay.vn
-3. "URL gọi đến" điền: http://<IP_VPS_CUA_BAN>:30079
-4. "Request Content type" chọn: application/json
+# HƯỚNG DẪN CÀI ĐẶT WEBHOOK SEPAY.VN:
+# 1. Tại cấu hình Webhook trên Sepay.vn, mục "Kiểu chứng thực" hãy chọn: "API Key"
+# 2. Dán API Key từ bên dưới vào mục "API Key" trên Sepay.vn
+# 3. "URL gọi đến" điền: http://<IP_VPS_CUA_BAN>:30079
+# 4. "Request Content type" chọn: application/json
 
 💎 TÀI TRỢ HOSTING: https://cloudcheap.asia/
 💬 DISCORD SUPPORT: https://discord.gg/k99aC2mYJj
