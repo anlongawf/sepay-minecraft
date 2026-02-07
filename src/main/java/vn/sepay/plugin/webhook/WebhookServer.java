@@ -1,17 +1,17 @@
 package vn.sepay.plugin.webhook;
 
 import vn.sepay.plugin.SepayPlugin;
+import vn.sepay.plugin.scheduler.SchedulerAdapter;
 import fi.iki.elonen.NanoHTTPD;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Player;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
 import java.io.*;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -102,37 +102,48 @@ public class WebhookServer extends NanoHTTPD {
             String playerName = matcher.group(1);
             plugin.getLogger().info("[Sepay] Match found: Player=" + playerName);
             
-            Bukkit.getScheduler().runTask(plugin, () -> {
-                OfflinePlayer player = Bukkit.getOfflinePlayer(playerName);
-                // Allow processing even if player object is minimal (Paper usually handles getOfflinePlayer well)
-                // We check if they have played before or if server allows new players (usually safe to assume valid if name matches)
+            // Folia: Use Global Scheduler to look up player
+            SchedulerAdapter.getScheduler().runGlobal(plugin, () -> {
+                Player player = Bukkit.getPlayer(playerName); // Safe on Global
                 
-                 if (player.isOnline()) {
-                     double exchangeRate = plugin.getConfigManager().getExchangeRate();
-                     double gameMoney = amount * exchangeRate;
-                     
-                     // Execute Command
-                     for (String cmd : plugin.getConfigManager().getSuccessCommands()) {
-                         String run = cmd.replace("%player%", playerName)
-                                         .replace("%amount%", String.valueOf((long)amount))
-                                         .replace("%game_money%", String.valueOf((long)gameMoney));
-                         Bukkit.dispatchCommand(Bukkit.getConsoleSender(), run);
-                     }
-                     
-                     // Play Effects
-                     if (player.isOnline()) {
-                         plugin.getEffectManager().playSuccessEffects(player.getPlayer(), amount, gameMoney);
-                     }
-                     
-                     plugin.getDatabaseManager().saveTransaction(txnId, playerName, amount, content, "SUCCESS");
-                     plugin.sendDiscordLog(playerName, amount, txnId); // Discord Log
-                     plugin.getLogger().info("[Sepay] Processed donation for " + playerName + ": " + amount);
-                 } else {
-                     // Offline -> Pending
-                     plugin.getDatabaseManager().saveTransaction(txnId, playerName, amount, content, "PENDING");
-                     plugin.sendDiscordLog(playerName, amount, txnId); // Discord Log
-                     plugin.getLogger().info("[Sepay] Player offline. Saved as PENDING for " + playerName);
-                 }
+                if (player != null) {
+                    // Player is Online -> Transfer control to Player's Region Thread
+                    SchedulerAdapter.getScheduler().runEntity(player, plugin, () -> {
+                         double exchangeRate = plugin.getConfigManager().getExchangeRate();
+                         double gameMoney = amount * exchangeRate;
+                         
+                         // Execute Command
+                         for (String cmd : plugin.getConfigManager().getSuccessCommands()) {
+                             String run = cmd.replace("%player%", playerName)
+                                             .replace("%amount%", String.valueOf((long)amount))
+                                             .replace("%game_money%", String.valueOf((long)gameMoney));
+                             Bukkit.dispatchCommand(Bukkit.getConsoleSender(), run);
+                         }
+                         
+                         // Play Effects
+                         plugin.getEffectManager().playSuccessEffects(player, amount, gameMoney);
+                         
+                         // Database ops should be Async, but for now we do it here (fast enough?) or submit to async
+                         // Ideally: Scheduler.runAsync(() -> db.save(...));
+                         // But saving first prevents duplicates better? 
+                         // DatabaseManager operations usually involve I/O, so better async.
+                         // Let's schedule Async save to avoid blocking Main/Region
+                         
+                         SchedulerAdapter.getScheduler().runAsync(plugin, () -> {
+                             plugin.getDatabaseManager().saveTransaction(txnId, playerName, amount, content, "SUCCESS");
+                             plugin.sendDiscordLog(playerName, amount, txnId); 
+                         });
+                         
+                         plugin.getLogger().info("[Sepay] Processed donation for " + playerName + ": " + amount);
+                    });
+                } else {
+                    // Player Offline
+                    SchedulerAdapter.getScheduler().runAsync(plugin, () -> {
+                        plugin.getDatabaseManager().saveTransaction(txnId, playerName, amount, content, "PENDING");
+                        plugin.sendDiscordLog(playerName, amount, txnId);
+                        plugin.getLogger().info("[Sepay] Player offline. Saved as PENDING for " + playerName);
+                    });
+                }
             });
         }
     }

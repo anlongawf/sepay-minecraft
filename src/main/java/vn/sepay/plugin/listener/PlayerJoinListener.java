@@ -2,7 +2,9 @@ package vn.sepay.plugin.listener;
 
 import vn.sepay.plugin.SepayPlugin;
 import vn.sepay.plugin.database.TransactionData;
+import vn.sepay.plugin.scheduler.SchedulerAdapter;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -19,16 +21,19 @@ public class PlayerJoinListener implements Listener {
 
     @EventHandler
     public void onJoin(PlayerJoinEvent event) {
-        String playerName = event.getPlayer().getName();
+        Player player = event.getPlayer();
+        String playerName = player.getName();
         
         // Run Async to check DB
-        Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+        SchedulerAdapter.getScheduler().runAsync(plugin, () -> {
             List<TransactionData> pending = plugin.getDatabaseManager().getPendingTransactions(playerName);
             
             if (pending.isEmpty()) return;
 
             // Run Sync to give rewards
-            Bukkit.getScheduler().runTask(plugin, () -> {
+            SchedulerAdapter.getScheduler().runEntity(player, plugin, () -> {
+                if (!player.isOnline()) return;
+
                 for (TransactionData txn : pending) {
                     double amount = txn.getAmount();
                     double exchangeRate = plugin.getConfigManager().getExchangeRate();
@@ -42,10 +47,10 @@ public class PlayerJoinListener implements Listener {
                     }
                     
                     // Play Effects
-                    plugin.getEffectManager().playSuccessEffects(event.getPlayer(), amount, gameMoney);
+                    plugin.getEffectManager().playSuccessEffects(player, amount, gameMoney);
                     
-                    // Mark as SUCCESS
-                    Bukkit.getScheduler().runTaskAsynchronously(plugin, () -> {
+                    // Mark as SUCCESS (Async update)
+                    SchedulerAdapter.getScheduler().runAsync(plugin, () -> {
                         plugin.getDatabaseManager().updateStatus(txn.getId(), "SUCCESS");
                     });
                     

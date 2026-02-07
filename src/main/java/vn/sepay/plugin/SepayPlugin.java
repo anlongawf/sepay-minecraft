@@ -1,12 +1,12 @@
 package vn.sepay.plugin;
 
-import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 import vn.sepay.plugin.command.NapCommand;
 import vn.sepay.plugin.command.SepayReloadCommand;
 import vn.sepay.plugin.config.ConfigManager;
 import vn.sepay.plugin.listener.PlayerJoinListener;
 import vn.sepay.plugin.webhook.WebhookServer;
+import vn.sepay.plugin.scheduler.SchedulerAdapter;
 import java.util.logging.Logger;
 
 public class SepayPlugin extends JavaPlugin {
@@ -98,7 +98,7 @@ public class SepayPlugin extends JavaPlugin {
     }
     
     public void sendDiscordLog(String user, double amount, String id) {
-        Bukkit.getScheduler().runTaskAsynchronously(this, () -> {
+        SchedulerAdapter.getScheduler().runAsync(this, () -> {
             String url = getConfig().getString("discord.webhook_url");
             if (url == null || url.isEmpty()) return;
             
