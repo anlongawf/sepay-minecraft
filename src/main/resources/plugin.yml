@@ -16,10 +16,11 @@ permissions:
     default: op
 
 commands:
-  nap:
-    description: Nạp tiền qua QR Code
-    usage: /nap <số tiền>
+  bank:
+    description: Mở menu ngân hàng (Nạp thẻ, Top, Lịch sử)
+    usage: /bank
     permission: sepay.use
+    aliases: [nap]
   sepayreload:
     description: Tải lại cấu hình
     usage: /sepayreload

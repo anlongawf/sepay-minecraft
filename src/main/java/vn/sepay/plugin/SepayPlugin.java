@@ -2,7 +2,6 @@ package vn.sepay.plugin;
 
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
-import vn.sepay.plugin.command.NapCommand;
 import vn.sepay.plugin.command.SepayReloadCommand;
 import vn.sepay.plugin.config.ConfigManager;
 import vn.sepay.plugin.listener.PlayerJoinListener;
@@ -33,7 +32,7 @@ public class SepayPlugin extends JavaPlugin {
         this.guiManager = new vn.sepay.plugin.utils.GuiManager(this);
         
         // Register Commands
-        getCommand("nap").setExecutor(new NapCommand(this));
+        getCommand("bank").setExecutor(new vn.sepay.plugin.command.BankCommand(this));
         getCommand("sepayreload").setExecutor(new SepayReloadCommand(this));
         
         // Register Event

@@ -1,0 +1,43 @@
+[ SEPAY PLUGIN - HỆ THỐNG NẠP THẺ TỰ ĐỘNG ]
+- Phiên bản: 1.1.0 (Hỗ trợ Paper 1.21 & Folia 1.20+)
+- Website: https://sepay.vn
+
+[ TÍNH NĂNG CHÍNH ]
+1. Tự động nạp thẻ qua QR Code ngân hàng (MBBank, VCB, MoMo, ...).
+2. Tạo mã QR chính xác với nội dung chuyển khoản tự động.
+3. Hỗ trợ nền tảng Folia (Mới) và Paper truyền thống.
+4. Hệ thống Webhook (Cổng 5280) nhận thông báo tức thì từ Sepay.
+
+[ TÍNH NĂNG MỚI (v1.1.0) ]
+5. Hệ thống Khuyến Mãi (Promotion):
+   - Thiết lập "Giờ Vàng" (ví dụ: 18h-21h).
+   - Thiết lập "Ngày Vàng" (ví dụ: T7, CN).
+   - Tự động cộng thêm % giá trị khi nạp trong thời gian này.
+   - Thông báo rõ ràng khi vào game hoặc khi dùng lệnh.
+
+6. Menu Ngân Hàng (GUI):
+   - Gõ `/bank` -> Mở giao diện chính (Nạp thẻ, Top, Lịch sử).
+   - Hỗ trợ nhập số tiền nhanh: `/bank <số tiền>`.
+   - Hiển thị trạng thái Khuyến Mãi ngay trong GUI.
+
+7. Bảng Xếp Hạng (Leaderboard):
+   - Tích hợp PlaceholderAPI.
+   - Hiển thị Top 10 người nạp nhiều nhất qua Hologram (DecentHolograms).
+   - Placeholders:
+     %sepay_top_name_1% -> Tên Top 1
+     %sepay_top_amount_1% -> Số tiền Top 1
+     (Hỗ trợ đến %sepay_top_amount_10%)
+
+[ CÀI ĐẶT ]
+1. Copy file `SepayPlugin-1.1.0.jar` vào thư mục `plugins/`.
+2. Khởi động lại Server.
+3. Vào `plugins/SepayPlugin/config.yml` nhập API Key, Số tài khoản, Ngân hàng.
+4. Trên Sepay.vn, cài đặt IPN (Webhook):
+   URL: http://<IP_SERVER_CUA_BAN>:5280
+   (Lưu ý mở port 5280 trên VPS/Hosting).
+5. Reload plugin bằng lệnh `/sepayreload`.
+
+[ LỆNH & QUYỀN ]
+- /bank          : Mở menu ngân hàng (Quyền: sepay.use - mặc định có).
+- /bank <tiền>   : Tạo mã QR nạp trực tiếp.
+- /sepayreload   : Tải lại cấu hình (Quyền: sepay.admin - cho OP).
