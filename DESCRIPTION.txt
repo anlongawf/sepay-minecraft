@@ -10,10 +10,9 @@
 
 [ TÍNH NĂNG MỚI (v1.1.0) ]
 5. Hệ thống Khuyến Mãi (Promotion):
-   - Thiết lập "Giờ Vàng" (ví dụ: 18h-21h).
-   - Thiết lập "Ngày Vàng" (ví dụ: T7, CN).
+   - Cài đặt ngày kết thúc (End Date) đơn giản.
    - Tự động cộng thêm % giá trị khi nạp trong thời gian này.
-   - Thông báo rõ ràng khi vào game hoặc khi dùng lệnh.
+   - Tùy chỉnh toàn bộ thông báo khuyến mãi trong config.
 
 6. Menu Ngân Hàng (GUI):
    - Gõ `/bank` -> Mở giao diện chính (Nạp thẻ, Top, Lịch sử).

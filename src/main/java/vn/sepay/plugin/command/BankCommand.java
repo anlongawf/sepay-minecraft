@@ -50,9 +50,12 @@ public class BankCommand implements CommandExecutor {
              // Promotion Message
              if (plugin.getPromotionManager().isPromotionActive()) {
                  double bonus = plugin.getPromotionManager().getBonusPercent();
+                 String header = plugin.getConfig().getString("promotion.messages.chat_header", "&e⚡ &lKHUYẾN MÃI ĐANG DIỄN RA!");
+                 String desc = plugin.getConfig().getString("promotion.messages.chat_desc", "&fNạp ngay để nhận thêm &6+%bonus%% &fgiá trị.");
+                 
                  player.sendMessage("");
-                 player.sendMessage("§e⚡ §lKHUYẾN MÃI ĐANG DIỄN RA!");
-                 player.sendMessage("§fNạp ngay để nhận thêm §6+" + (long)bonus + "% §fgiá trị.");
+                 player.sendMessage(header.replace("&", "§"));
+                 player.sendMessage(desc.replace("%bonus%", String.valueOf((long)bonus)).replace("&", "§"));
              }
              
              player.sendMessage("§8----------------------------------");

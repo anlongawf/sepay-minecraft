@@ -62,8 +62,9 @@ public class PlayerJoinListener implements Listener {
                     
                     // Promotion Msg
                     if (bonusPercent > 0) {
-                         String msg = "&e⚡ &lKHUYẾN MÃI: &fBạn được tặng thêm &6" + (long)bonusPercent + "% &fgiá trị nạp!";
-                         player.sendMessage(msg.replace("&", "§"));
+                         String msg = plugin.getConfig().getString("promotion.messages.bonus_received", 
+                                 "&e⚡ &lKHUYẾN MÃI: &fBạn được tặng thêm &6%bonus%% &fgiá trị nạp!");
+                         player.sendMessage(msg.replace("%bonus%", String.valueOf((long)bonusPercent)).replace("&", "§"));
                     }
                     
                     // Mark as SUCCESS (Async update)

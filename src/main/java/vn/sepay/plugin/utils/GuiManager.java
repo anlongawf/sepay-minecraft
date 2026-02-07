@@ -61,9 +61,23 @@ public class GuiManager implements Listener {
         // Promotion Info
         if (plugin.getPromotionManager().isPromotionActive()) {
             double bonus = plugin.getPromotionManager().getBonusPercent();
-            inv.setItem(26, createGuiItem(Material.GOLD_INGOT, "§e⚡ ĐANG KHUYẾN MÃI", 
-                "§7Hệ thống đang tặng thêm §6" + (long)bonus + "%",
-                "§7cho mọi giao dịch!"));
+            String title = plugin.getConfig().getString("promotion.messages.gui_title", "&e⚡ ĐANG KHUYẾN MÃI");
+            List<String> rawLore = plugin.getConfig().getStringList("promotion.messages.gui_lore");
+            
+            if (rawLore.isEmpty()) {
+                rawLore = Arrays.asList("&7Hệ thống đang tặng thêm &6%bonus%%", "&7cho mọi giao dịch!");
+            }
+            
+            List<String> lore = new ArrayList<>();
+            for (String line : rawLore) {
+                lore.add(line.replace("%bonus%", String.valueOf((long)bonus)));
+            }
+            
+            // Convert List<String> to String... for createGuiItem helper
+            // Helper method accepts String... lore (Varargs)
+            // We need to change createGuiItem to accept List or convert.
+            // Let's create a temp array.
+            inv.setItem(26, createGuiItem(Material.GOLD_INGOT, title, lore.toArray(new String[0])));
         }
 
         // Other Items

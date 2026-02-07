@@ -23,37 +23,23 @@ public class PromotionManager {
             return false;
         }
 
-        LocalDateTime now = LocalDateTime.now(ZONE_VN);
+        String endDateStr = plugin.getConfig().getString("promotion.end_date", "");
         
-        // 1. Check Happy Days
-        List<String> happyDays = plugin.getConfig().getStringList("promotion.happy_days");
-        String currentDay = now.getDayOfWeek().name(); // MONDAY, TUESDAY...
-        
-        boolean isHappyDay = happyDays.contains(currentDay);
-
-        // 2. Check Happy Hours
-        boolean isHappyHour = false;
-        List<String> happyHours = plugin.getConfig().getStringList("promotion.happy_hours");
-        LocalTime currentTime = now.toLocalTime();
-        
-        for (String range : happyHours) {
-            try {
-                String[] parts = range.split("-");
-                if (parts.length == 2) {
-                    LocalTime start = LocalTime.parse(parts[0].trim());
-                    LocalTime end = LocalTime.parse(parts[1].trim());
-                    
-                    if (!currentTime.isBefore(start) && currentTime.isBefore(end)) {
-                        isHappyHour = true;
-                        break;
-                    }
-                }
-            } catch (Exception e) {
-                plugin.getLogger().warning("Invalid happy_hours format: " + range);
-            }
+        // If empty -> Forever active (as long as enabled=true)
+        if (endDateStr == null || endDateStr.isEmpty()) {
+            return true;
         }
 
-        return isHappyDay || isHappyHour;
+        try {
+            LocalDateTime now = LocalDateTime.now(ZONE_VN);
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+            LocalDateTime endDate = LocalDateTime.parse(endDateStr, formatter);
+            
+            return now.isBefore(endDate);
+        } catch (Exception e) {
+            plugin.getLogger().warning("Invalid promotion.end_date format! Use 'dd/MM/yyyy HH:mm'. Error: " + e.getMessage());
+            return false;
+        }
     }
 
     public double getBonusPercent() {

@@ -19,19 +19,25 @@ sepay:
   # Port này phải khớp với URL gọi đến (VD: 30079)
   webhook_port: 30079
 
+  # Khuyến mãi
 promotion:
-  enabled: true
+  enabled: false
   bonus_percent: 20
   # Múi giờ server: Asia/Ho_Chi_Minh (Cố định, không cần chỉnh)
   
-  # Khung giờ vàng (HH:mm - HH:mm)
-  happy_hours:
-    - "18:00-21:00"
-    
-  # Ngày vàng (Tên tiếng Anh in hoa: MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY)
-  happy_days:
-    - "SATURDAY"
-    - "SUNDAY"
+  # Check promotion status based on end_date
+  # Format: "dd/MM/yyyy HH:mm" (Ví dụ: 30/04/2025 23:59)
+  # Nếu để trống "" -> Khuyến mãi chạy vô thời hạn (khi enabled: true)
+  end_date: ""
+
+  messages:
+    gui_title: "&e⚡ ĐANG KHUYẾN MÃI"
+    gui_lore:
+      - "&7Hệ thống đang tặng thêm &6%bonus%%"
+      - "&7cho mọi giao dịch!"
+    chat_header: "&e⚡ &lKHUYẾN MÃI ĐANG DIỄN RA!"
+    chat_desc: "&fNạp ngay để nhận thêm &6+%bonus%% &fgiá trị."
+    bonus_received: "&e⚡ &lKHUYẾN MÃI: &fBạn được tặng thêm &6%bonus%% &fgiá trị nạp!"
 
 database:
   type: "sqlite"
