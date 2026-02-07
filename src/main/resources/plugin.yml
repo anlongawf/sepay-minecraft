@@ -2,6 +2,7 @@ name: SepayPlugin
 version: '${project.version}'
 main: vn.sepay.plugin.SepayPlugin
 api-version: '1.21'
+folia-supported: true
 prefix: Sepay
 authors: [Google Antigravity]
 description: Plugin tích hợp Sepay QR và Webhook.
